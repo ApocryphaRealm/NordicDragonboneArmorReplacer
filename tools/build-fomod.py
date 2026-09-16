@@ -221,7 +221,7 @@ def main(out_root=None):
         if os.path.isdir(src):
             n_ours += copy_tree(src, os.path.join(core, "meshes", "NordicDragonbone", sub))
 
-    esl = os.path.join(REPO, "plugin", "Nordic Dragonbone Armor Replacer.esl")
+    esl = os.path.join(REPO, "plugin", "Nordic Dragonbone Armor Replacer.esp")
     if not os.path.isfile(esl):
         fail("the light plugin is missing - run tools/build-arma-esl.py first, or the worn armour "
              "would keep pointing at vanilla's own meshes")
