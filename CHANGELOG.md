@@ -1,5 +1,19 @@
 # Changelog - Nordic Dragonbone Armor Replacer
 
+## 1.0.1
+
+* Adds a light plugin. It points vanilla's twenty dragon armour ADDON records at this mod's own
+  mesh folder, so the worn armour is settled by load order and another mod can supersede it in the
+  plugins tab rather than only by mod priority.
+* Addon records rather than armour records on purpose: 20 instead of 258. Every pre-enchanted
+  dragon armour variant reaches its worn model through the shared addon, so twenty overrides change
+  all of them, and the plugin does not collide with anything that edits dragon armour stats.
+* Ground models keep their vanilla paths and are picked up by every variant that way, so nothing is
+  left looking vanilla. The meshes ship at both paths - a few megabytes against a package of 4K
+  textures.
+* Dawnguard's three Soul Cairn Keeper addons are included, so NPC-worn dragonplate changes too.
+* No change to any mesh or texture. A 1.0 install can be updated in place.
+
 ## 1.0.0
 
 First release.
