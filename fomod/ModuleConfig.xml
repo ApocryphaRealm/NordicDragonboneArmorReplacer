@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://qconsulting.ca/fo3/ModConfig5.0.xsd">
+	<moduleName>Nordic Dragonbone Armor Replacer</moduleName>
+	<moduleImage path="fomod\images\header.png" showImage="true" showFade="true" height="-1" />
+
+	<!-- The meshes are byte-identical between the two finishes, so every install gets the same
+	     ones and the choice below only swaps textures. build-fomod.py PROVES that identity at
+	     build time and refuses to package if it ever stops being true. -->
+	<requiredInstallFiles>
+		<folder source="00 Core" destination="" priority="0" />
+	</requiredInstallFiles>
+
+	<installSteps order="Explicit">
+		<installStep name="Choose a finish">
+			<optionalFileGroups order="Explicit">
+				<group name="Dragonbone and dragonscale finish" type="SelectExactlyOne">
+					<plugins order="Explicit">
+						<plugin name="Standard">
+							<description>The finish as NordwarUA and QuestionableKhajiit made it: brown leather, oxblood cloth and gold fittings against bone-coloured scale.
+
+Pictured: dragonplate on the left, dragonscale on the right.</description>
+							<image path="fomod\images\standard.png" />
+							<files>
+								<folder source="01 Textures - Standard" destination="" priority="0" />
+							</files>
+							<typeDescriptor>
+								<type name="Optional" />
+							</typeDescriptor>
+						</plugin>
+						<plugin name="Black Edition">
+							<description>The same armour with the leather, cloth and fittings taken down to black and unpolished steel. The scale itself is unchanged, so the set reads darker without losing the bone.
+
+Pictured: dragonplate on the left, dragonscale on the right.</description>
+							<image path="fomod\images\black.png" />
+							<files>
+								<folder source="02 Textures - Black" destination="" priority="0" />
+							</files>
+							<typeDescriptor>
+								<type name="Optional" />
+							</typeDescriptor>
+						</plugin>
+					</plugins>
+				</group>
+			</optionalFileGroups>
+		</installStep>
+	</installSteps>
+</config>

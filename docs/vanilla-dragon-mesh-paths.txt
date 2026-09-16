@@ -1,0 +1,40 @@
+# Every mesh path a vanilla dragon-armour ARMA record points at, read out of Skyrim.esm on
+# 2026-09-16 with a TES4 reader (all ARMA records whose editor ID contains dragonplate,
+# dragonbone or dragonscale; their MOD2/MOD3/MOD4/MOD5 model fields).
+#
+# A path ending _1.nif implies its _0.nif twin, because the game swaps the suffix by body weight.
+# build-fomod.py checks both and refuses to package a replacer that leaves any of them to the
+# vanilla BSA - that is how a set ends up looking half-new in game.
+#
+# Paths are relative to Data\meshes\ and are lowercase; Skyrim's file lookup is case-insensitive.
+armor/dragonbone/1stpersondragonbonearmorf_1.nif
+armor/dragonbone/1stpersondragonbonearmorm_1.nif
+armor/dragonbone/dragonbonearmorf_1.nif
+armor/dragonbone/dragonbonearmorm_1.nif
+armor/dragonbone/dragonboneboots_1.nif
+armor/dragonbone/dragonbonebootsf_1.nif
+armor/dragonbone/dragonbonegauntlets_1.nif
+armor/dragonbone/dragonbonegauntletsf_1.nif
+armor/dragonbone/dragonbonehelmet2_1.nif
+armor/dragonbone/dragonbonehelmetf_1.nif
+armor/dragonbone/dragonbonehelmetorcf_1.nif
+armor/dragonbone/dragonbonehelmetorcm_1.nif
+armor/dragonbone/dragonboneshield.nif
+armor/dragonbone/helmargonianm.nif
+armor/dragonbone/helmkhajiitf.nif
+armor/dragonbone/helmkhajiitm.nif
+armor/dragonscale/1stpersondragonscalearmorf_1.nif
+armor/dragonscale/1stpersondragonscalearmorm_1.nif
+armor/dragonscale/dragonscalearmorf_1.nif
+armor/dragonscale/dragonscalearmorm_1.nif
+armor/dragonscale/dragonscalebootsf_1.nif
+armor/dragonscale/dragonscalebootsm_1.nif
+armor/dragonscale/dragonscaleglovesf_1.nif
+armor/dragonscale/dragonscaleglovesm_1.nif
+armor/dragonscale/dragonscalehelmargonianm.nif
+armor/dragonscale/dragonscalehelmetf.nif
+armor/dragonscale/dragonscalehelmetm_1.nif
+armor/dragonscale/dragonscalehelmetorcf.nif
+armor/dragonscale/dragonscalehelmetorcm_1.nif
+armor/dragonscale/dragonscalehelmkhajiitm.nif
+armor/dragonscale/dragonscaleshield.nif
