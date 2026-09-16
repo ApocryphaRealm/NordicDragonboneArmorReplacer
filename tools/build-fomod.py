@@ -210,6 +210,23 @@ def main(out_root=None):
     core = os.path.join(out_root, "00 Core")
     n_meshes = copy_tree(os.path.join(std_dir, "meshes"), os.path.join(core, "meshes"))
 
+    # The same meshes again under our own folder, which is where the light plugin points vanilla's
+    # armour ADDON records. Both copies are wanted: the plugin governs the worn armour through our
+    # path, while ground models and anything else that names a mesh directly still reads the
+    # vanilla path. Meshes are a few megabytes against a package of textures, so the duplication
+    # costs nothing worth optimising away, and it means no piece can end up unaccounted for.
+    n_ours = 0
+    for sub in ("dragonbone", "dragonscale"):
+        src = os.path.join(std_dir, "meshes", "armor", sub)
+        if os.path.isdir(src):
+            n_ours += copy_tree(src, os.path.join(core, "meshes", "NordicDragonbone", sub))
+
+    esl = os.path.join(REPO, "plugin", "Nordic Dragonbone Armor Replacer.esl")
+    if not os.path.isfile(esl):
+        fail("the light plugin is missing - run tools/build-arma-esl.py first, or the worn armour "
+             "would keep pointing at vanilla's own meshes")
+    shutil.copy2(esl, core)
+
     shared = {k for k in set(std_tex) & set(blk_tex) if std_tex[k] == blk_tex[k]}
     n_core_tex = 0
     for rel in sorted(shared):
@@ -265,7 +282,8 @@ def main(out_root=None):
     total = sum(len(fs) for _, _, fs in os.walk(out_root))
     print("built %s" % out_root)
     print("  version ............... %s" % ver)
-    print("  shared meshes ......... %d" % n_meshes)
+    print("  shared meshes ......... %d, plus %d under NordicDragonbone\\" % (n_meshes, n_ours))
+    print("  light plugin .......... %s" % os.path.basename(esl))
     print("  shared textures ....... %d (in Core, not duplicated)" % n_core_tex)
     print("  Standard-only ......... %d" % n_tex["01 Textures - Standard"])
     print("  Black-only ............ %d" % n_tex["02 Textures - Black"])
