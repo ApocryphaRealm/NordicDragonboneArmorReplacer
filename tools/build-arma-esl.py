@@ -101,6 +101,8 @@ def read_arma(path):
                 continue
             flags = struct.unpack("<I", d[off+8:off+12])[0]
             fid = struct.unpack("<I", d[off+12:off+16])[0]
+            vcs = struct.unpack("<I", d[off+16:off+20])[0]
+            ver = struct.unpack("<H", d[off+20:off+22])[0]
             body = d[off+24:off+24+n]
             off += 24 + n
             if t != b"ARMA":
@@ -110,7 +112,7 @@ def read_arma(path):
                     body = zlib.decompress(body[4:])
                 except Exception:
                     continue
-            out[fid] = (body, masters)
+            out[fid] = (body, masters, vcs, ver)
     walk(24 + hs, len(d))
     return out
 
@@ -152,16 +154,16 @@ def main(out_path=None):
         p = plugin_path(name)
         if p is None:
             continue
-        for fid, (body, masters) in read_arma(p).items():
+        for fid, (body, masters, vcs, ver) in read_arma(p).items():
             if any(repath(v) for v in model_paths(body).values()):
-                winners[fid] = (body, name, idx, masters)
+                winners[fid] = (body, name, idx, masters, vcs, ver)
     if not winners:
         fail("no vanilla ARMA record points at %s - the game data is not where this script thinks"
              % ", ".join(REPATH))
 
     # ---- the shortest master list that keeps every index meaning the same thing
     highest = 0
-    for fid, (body, name, idx, masters) in winners.items():
+    for fid, (body, name, idx, masters, vcs, ver) in winners.items():
         owner_idx = fid >> 24
         highest = max(highest, owner_idx)
         for sig, data in subrecords(body):
@@ -176,7 +178,7 @@ def main(out_path=None):
     masters_out = STANDARD[:highest + 1]
 
     # ---- the invariant, asserted rather than assumed
-    for fid, (body, name, idx, src_masters) in winners.items():
+    for fid, (body, name, idx, src_masters, vcs, ver) in winners.items():
         owner = src_masters[fid >> 24] if (fid >> 24) < len(src_masters) else name
         if masters_out[fid >> 24].lower() != owner.lower():
             fail("index %d means '%s' in %s but '%s' here - FormIDs would silently point at the "
@@ -187,7 +189,7 @@ def main(out_path=None):
     moved = 0
     report = []
     for fid in sorted(winners):
-        body, name, idx, _ = winners[fid]
+        body, name, idx, _, vcs, ver = winners[fid]
         remapped = {}
         for sig, value in model_paths(body).items():
             new = repath(value)
@@ -195,7 +197,12 @@ def main(out_path=None):
                 remapped[sig] = new
                 moved += 1
         new_body = rebuild(body, remapped)
-        records += b"ARMA" + struct.pack("<IIIII", len(new_body), 0, fid, 0, 44) + new_body
+        # Carry the record's OWN form version through. Stamping a fixed 44 told the engine to
+        # expect the newer 8-byte BOD2 where these records actually carry a 12-byte BODT, so every
+        # subrecord after it shifted and the game died resolving the model path. These records are
+        # form version 39-40. The timestamp/VCS word is preserved for the same reason: copy the
+        # header, change only what has to change.
+        records += (b"ARMA" + struct.pack("<IIIIHH", len(new_body), 0, fid, vcs, ver, 0) + new_body)
         report.append((fid, name, len(remapped)))
 
     grup = b"GRUP" + struct.pack("<I", len(records) + 24) + b"ARMA" + struct.pack("<iii", 0, 0, 0) + records

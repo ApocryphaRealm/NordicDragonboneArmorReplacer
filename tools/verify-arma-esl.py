@@ -74,7 +74,8 @@ def main(pkg=None):
         p = gen.plugin_path(name)
         if p is None:
             continue
-        for fid, (body, _) in gen.read_arma(p).items():
+        for fid, rec in gen.read_arma(p).items():
+            body = rec[0]
             if any(gen.repath(v) for v in gen.model_paths(body).values()):
                 winners[fid] = (body, name)
 
@@ -112,6 +113,29 @@ def main(pkg=None):
     print("  light flag ............ set")
     print("  masters ............... %s" % ", ".join(masters))
     print("  records ............... %d, all matching the game's own" % len(recs))
+    import struct as _s
+    d = open(esl, "rb").read()
+    hs = _s.unpack("<I", d[4:8])[0]
+    off, mismatched = 24 + hs + 24, []
+    src_ver = {}
+    for nm in gen.STANDARD:
+        pth = gen.plugin_path(nm)
+        if pth:
+            for f, r in gen.read_arma(pth).items():
+                if f in recs: src_ver[f] = r[3]
+    while off < len(d):
+        n = _s.unpack("<I", d[off+4:off+8])[0]
+        f = _s.unpack("<I", d[off+12:off+16])[0]
+        v = _s.unpack("<H", d[off+20:off+22])[0]
+        if f in src_ver and v != src_ver[f]:
+            mismatched.append((f, src_ver[f], v))
+        off += 24 + n
+    if mismatched:
+        fail("%d record(s) carry the wrong FORM VERSION, e.g. %08X is %d here and %d in the game. "
+             "That is what tells the engine whether the body template is a 12-byte BODT or an "
+             "8-byte BOD2; get it wrong and every later subrecord shifts and the game crashes on "
+             "load." % (len(mismatched), mismatched[0][0], mismatched[0][2], mismatched[0][1]))
+    print("  form versions ......... all %d match the game's (39-40, not 44)" % len(recs))
     print("  every difference ...... a model path, and only where one was meant to move")
 
     if pkg is None:
