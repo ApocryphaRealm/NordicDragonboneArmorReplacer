@@ -5,13 +5,54 @@
 	<moduleImage path="fomod\images\header.png" showImage="true" showFade="true" height="-1" />
 
 	<!-- The meshes are byte-identical between the two finishes, so every install gets the same
-	     ones and the choice below only swaps textures. build-fomod.py PROVES that identity at
-	     build time and refuses to package if it ever stops being true. -->
+	     ones and the finish choice only swaps textures. build-fomod.py PROVES that identity at
+	     build time and refuses to package if it ever stops being true.
+	     Core holds the meshes under this mod's own folder, which both plugins point at, plus the
+	     textures the two finishes share. -->
 	<requiredInstallFiles>
 		<folder source="00 Core" destination="" priority="0" />
 	</requiredInstallFiles>
 
 	<installSteps order="Explicit">
+		<installStep name="Replace or add">
+			<optionalFileGroups order="Explicit">
+				<group name="How the armour comes in" type="SelectExactlyOne">
+					<plugins order="Explicit">
+						<plugin name="Replace the vanilla dragon armour">
+							<description>The dragonplate and dragonscale armour the game already has - worn by you, sold by smiths, forged at the forge - becomes this armour. A light plugin points vanilla's armour addon records at these meshes, so another mod can supersede it by load order.</description>
+							<image path="fomod\images\header.png" />
+							<files>
+								<folder source="01 Replacer" destination="" priority="0" />
+							</files>
+							<typeDescriptor>
+								<type name="Recommended" />
+							</typeDescriptor>
+						</plugin>
+						<plugin name="Add it as a separate set">
+							<description>Vanilla's dragon armour is left exactly as it is. Ten new pieces - Nordic Dragonplate and Nordic Dragonscale cuirass, boots, gauntlets, helmet and shield - are forged at any forge with the Dragon Armor perk and tempered at the workbench, with the vanilla pieces' stats, materials and costs record for record.</description>
+							<image path="fomod\images\header.png" />
+							<files>
+								<folder source="02 Standalone" destination="" priority="0" />
+							</files>
+							<typeDescriptor>
+								<type name="Optional" />
+							</typeDescriptor>
+						</plugin>
+						<plugin name="Both">
+							<description>The vanilla dragon armour becomes this armour, and the ten Nordic pieces are added as their own craftable set as well. Two light plugins.</description>
+							<image path="fomod\images\header.png" />
+							<files>
+								<folder source="01 Replacer" destination="" priority="0" />
+								<folder source="02 Standalone" destination="" priority="0" />
+							</files>
+							<typeDescriptor>
+								<type name="Optional" />
+							</typeDescriptor>
+						</plugin>
+					</plugins>
+				</group>
+			</optionalFileGroups>
+		</installStep>
 		<installStep name="Choose a finish">
 			<optionalFileGroups order="Explicit">
 				<group name="Dragonbone and dragonscale finish" type="SelectExactlyOne">
@@ -22,7 +63,7 @@
 Pictured: dragonplate on the left, dragonscale on the right.</description>
 							<image path="fomod\images\standard.png" />
 							<files>
-								<folder source="01 Textures - Standard" destination="" priority="0" />
+								<folder source="03 Textures - Standard" destination="" priority="0" />
 							</files>
 							<typeDescriptor>
 								<type name="Optional" />
@@ -34,7 +75,7 @@ Pictured: dragonplate on the left, dragonscale on the right.</description>
 Pictured: dragonplate on the left, dragonscale on the right.</description>
 							<image path="fomod\images\black.png" />
 							<files>
-								<folder source="02 Textures - Black" destination="" priority="0" />
+								<folder source="04 Textures - Black" destination="" priority="0" />
 							</files>
 							<typeDescriptor>
 								<type name="Optional" />

@@ -1,5 +1,25 @@
 # Changelog - Nordic Dragonbone Armor Replacer
 
+## 1.0.2
+
+* The installer now asks whether the armour REPLACES the vanilla dragon armour (as before) or
+  comes in as a SEPARATE SET, or both (ShivaOrion43555 on the Nexus page, 2026-09-17: "by
+  standalone i mean not as a replacer but as an additional set").
+* The separate set is a second light plugin, `Nordic Dragonbone Armor - Standalone.esp`: ten new
+  pieces - Nordic Dragonplate and Nordic Dragonscale cuirass, boots, gauntlets, helmet and shield.
+  Each is the vanilla record copied out of Skyrim.esm at build time with a new FormID, a new name
+  and its models moved to this mod's folder, so stats, keywords, slots, races and sounds are the
+  game's own record for record; they are forged at any forge with the Dragon Armor perk and
+  tempered at the workbench through copies of the vanilla recipes. Vanilla's dragon armour is not
+  touched by this plugin, and the vanilla-path meshes are not installed in this mode.
+* `tools/verify-standalone-esp.py` re-reads the plugin against the game's records and refuses
+  anything but the intended edits; `tools/build-fomod.py` refuses to package unless every mesh the
+  standalone plugin names is in the shared Core folder.
+* The package is laid out by what each plugin needs: `00 Core` (meshes under `NordicDragonbone\`
+  and the shared textures), `01 Replacer` (the vanilla-path meshes and the replacer plugin),
+  `02 Standalone` (the standalone plugin), then the two finishes. A 1.0.1 install updated in place
+  with "Replace" chosen is unchanged.
+
 ## 1.0.1
 
 * Adds a light plugin - a `.esp` carrying the light flag, an ESPFE. Not a `.esl` file: the game

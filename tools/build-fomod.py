@@ -47,8 +47,8 @@ SEVENZIP = [r"C:\Program Files\7-Zip\7z.exe", r"C:\Program Files (x86)\7-Zip\7z.
 # The Standard finish is not a separate download - it is the dragon armour as it ships inside the
 # main SRA archive, which is why that one is a gigabyte and this script only wants 90 MB of it.
 SOURCES = [
-    ("Simply Realistic Armor (NordwarUA Edition)-47184-1-2", "01 Textures - Standard", "Standard"),
-    ("Dragonscale and Dragonbone Armor 1.2 (Black Edition)-47184-1-2", "02 Textures - Black", "Black Edition"),
+    ("Simply Realistic Armor (NordwarUA Edition)-47184-1-2", "03 Textures - Standard", "Standard"),
+    ("Dragonscale and Dragonbone Armor 1.2 (Black Edition)-47184-1-2", "04 Textures - Black", "Black Edition"),
 ]
 
 # Only these paths are taken out of the archives. Everything else in the main archive is the rest
@@ -174,7 +174,7 @@ def main(out_root=None):
         staged[folder] = (dest, files, label, os.path.basename(archive))
 
     (std_dir, std, _, std_name), (blk_dir, blk, _, blk_name) = \
-        staged["01 Textures - Standard"], staged["02 Textures - Black"]
+        staged["03 Textures - Standard"], staged["04 Textures - Black"]
 
     # ---- the two claims the installer's layout rests on
     std_meshes = {k: v for k, v in std.items() if k.startswith("meshes/")}
@@ -208,12 +208,15 @@ def main(out_root=None):
     # tens of megabytes each, and shipping the shared ones twice doubles the download for nothing.
     # Only the textures that actually differ go in the two choice folders.
     core = os.path.join(out_root, "00 Core")
-    n_meshes = copy_tree(os.path.join(std_dir, "meshes"), os.path.join(core, "meshes"))
 
-    # The same meshes again under our own folder, which is where the light plugin points vanilla's
-    # armour ADDON records. Both copies are wanted: the plugin governs the worn armour through our
-    # path, while ground models and anything else that names a mesh directly still reads the
-    # vanilla path. Meshes are a few megabytes against a package of textures, so the duplication
+    # 1.0.2: the package is split by WHAT THE PLUGINS NEED rather than shipped as one heap, because
+    # the installer now asks whether the armour replaces vanilla's or comes in as its own set.
+    #   00 Core        - the meshes under our own folder (both plugins point there) + shared textures
+    #   01 Replacer    - the meshes at their VANILLA paths (ground models and anything else that
+    #                    names a mesh directly) + the replacer plugin that repoints vanilla's addons
+    #   02 Standalone  - the plugin that adds the ten Nordic pieces and leaves vanilla alone; it must
+    #                    NOT bring the vanilla-path meshes, or vanilla would change anyway
+    # Meshes are a few megabytes against a package of textures, so the duplication under two paths
     # costs nothing worth optimising away, and it means no piece can end up unaccounted for.
     n_ours = 0
     for sub in ("dragonbone", "dragonscale"):
@@ -221,11 +224,32 @@ def main(out_root=None):
         if os.path.isdir(src):
             n_ours += copy_tree(src, os.path.join(core, "meshes", "NordicDragonbone", sub))
 
+    replacer = os.path.join(out_root, "01 Replacer")
+    n_meshes = copy_tree(os.path.join(std_dir, "meshes"), os.path.join(replacer, "meshes"))
     esl = os.path.join(REPO, "plugin", "Nordic Dragonbone Armor Replacer.esp")
     if not os.path.isfile(esl):
         fail("the light plugin is missing - run tools/build-arma-esl.py first, or the worn armour "
              "would keep pointing at vanilla's own meshes")
-    shutil.copy2(esl, core)
+    shutil.copy2(esl, replacer)
+
+    standalone = os.path.join(out_root, "02 Standalone")
+    os.makedirs(standalone, exist_ok=True)
+    sa_esp = os.path.join(REPO, "plugin", "Nordic Dragonbone Armor - Standalone.esp")
+    if not os.path.isfile(sa_esp):
+        fail("the standalone plugin is missing - run tools/build-standalone-esp.py first")
+    shutil.copy2(sa_esp, standalone)
+    # every mesh the standalone plugin names must be in Core, or a piece of the new set is invisible
+    needed = os.path.join(REPO, "plugin", "standalone-meshes-needed.txt")
+    if not os.path.isfile(needed):
+        fail("plugin/standalone-meshes-needed.txt is missing - run tools/build-standalone-esp.py")
+    owed = [l.strip() for l in open(needed, encoding="utf-8") if l.strip()]
+    absent = []
+    for rel in owed:
+        cands = [rel] + ([rel[:-6] + "_0.nif"] if rel.lower().endswith("_1.nif") else [])
+        absent += [c for c in cands if not os.path.isfile(os.path.join(core, "meshes", c.replace("\\", os.sep)))]
+    if absent:
+        fail("%d mesh(es) the standalone plugin names are not in Core, starting with %s - that piece "
+             "of the new set would be invisible" % (len(absent), absent[0]))
 
     shared = {k for k in set(std_tex) & set(blk_tex) if std_tex[k] == blk_tex[k]}
     n_core_tex = 0
@@ -237,7 +261,7 @@ def main(out_root=None):
         n_core_tex += 1
 
     n_tex = {}
-    for folder in ("01 Textures - Standard", "02 Textures - Black"):
+    for folder in ("03 Textures - Standard", "04 Textures - Black"):
         src_root = staged[folder][0]
         rels = [k for k in staged[folder][1]
                 if k.startswith("textures/") and k not in shared
@@ -282,11 +306,11 @@ def main(out_root=None):
     total = sum(len(fs) for _, _, fs in os.walk(out_root))
     print("built %s" % out_root)
     print("  version ............... %s" % ver)
-    print("  shared meshes ......... %d, plus %d under NordicDragonbone\\" % (n_meshes, n_ours))
-    print("  light plugin .......... %s" % os.path.basename(esl))
+    print("  meshes ................ %d under NordicDragonbone\ (Core), %d at vanilla paths (Replacer)" % (n_ours, n_meshes))
+    print("  plugins ............... %s (Replacer), %s (Standalone)" % (os.path.basename(esl), os.path.basename(sa_esp)))
     print("  shared textures ....... %d (in Core, not duplicated)" % n_core_tex)
-    print("  Standard-only ......... %d" % n_tex["01 Textures - Standard"])
-    print("  Black-only ............ %d" % n_tex["02 Textures - Black"])
+    print("  Standard-only ......... %d" % n_tex["03 Textures - Standard"])
+    print("  Black-only ............ %d" % n_tex["04 Textures - Black"])
     print("  dropped as unused ..... %s" % ", ".join(UNREFERENCED))
     print("  installer sources ..... %d, every one present" % len(sources))
     print("  files ................. %d" % total)
