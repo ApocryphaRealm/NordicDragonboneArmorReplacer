@@ -13,6 +13,12 @@
 * Ground models keep their vanilla paths and are picked up by every variant that way, so nothing is
   left looking vanilla. The meshes ship at both paths - a few megabytes against a package of 4K
   textures.
+* Each overridden record keeps the game's own form version and body-template layout. The first
+  cut of this plugin stamped every record as form version 44, which tells the engine to expect an
+  8-byte BOD2 where these records carry a 12-byte BODT; every later field shifted and the game
+  crashed before the main menu (three CTDs, 2026-09-16). The generator now copies the record
+  header unchanged, and `tools/verify-arma-esl.py` refuses any record whose form version differs
+  from the game's.
 * Dawnguard's three Soul Cairn Keeper addons are included, so NPC-worn dragonplate changes too.
 * No change to any mesh or texture. A 1.0 install can be updated in place.
 
